@@ -1,113 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Grid with CRUD Operations</title>
-<style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-    th, td {
-        border: 1px solid #dddddd;
-        text-align: left;
-        padding: 8px;
-    }
-    tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/table.css">
+    <link rel="stylesheet" href="styles/buttons.css">
+    <link rel="stylesheet" href="styles/popup.css">
 </head>
+
 <body>
+    <script src="scripts/utils.js" defer></script>
+    <script src="scripts/table.js" defer></script>
+    <script src="scripts/popup.js" defer></script>
+    <h2 style="text-align: center;">Product Catalog</h2>
 
-<h2>Data Grid with CRUD Operations</h2>
+    <table id="data-grid">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="data-body">
+            <!-- Data rows will be added here -->
+        </tbody>
+    </table>
 
-<table id="data-grid">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="data-body">
-        <!-- Data rows will be added here -->
-    </tbody>
-</table>
+    <button id="addProductBtn">Add Product</button>
 
-<form id="add-form">
-    <input type="text" id="name" placeholder="Name">
-    <input type="email" id="email" placeholder="Email">
-    <button type="submit">Add</button>
-</form>
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span id="closeBtn" class="close">&times;</span>
+            <h2>Popup Form</h2>
+            <form id="popupForm">
+                <input style="display: none" type="text" id="productID" name="productID">
+                <label for="name">Product Name:</label>
+                <input type="text" id="name" name="name" required>
 
-<script>
-    const dataGrid = document.getElementById('data-grid');
-    const dataBody = document.getElementById('data-body');
-    const addForm = document.getElementById('add-form');
-    let data = [];
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" required>
 
-    // Function to render data in the table
-    function renderData() {
-        dataBody.innerHTML = '';
-        data.forEach((item, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item.name}</td>
-                <td>${item.email}</td>
-                <td>
-                    <button onclick="editData(${index})">Edit</button>
-                    <button onclick="deleteData(${index})">Delete</button>
-                </td>
-            `;
-            dataBody.appendChild(row);
-        });
-    }
+                <label for="price">Price:</label>
+                <input type="number" id="price" name="price" required>
 
-    // Function to add new data
-    function addData(name, email) {
-        data.push({ name, email });
-        renderData();
-    }
-
-    // Function to edit existing data
-    function editData(index) {
-        const newName = prompt('Enter new name:', data[index].name);
-        const newEmail = prompt('Enter new email:', data[index].email);
-        if (newName !== null && newEmail !== null) {
-            data[index].name = newName;
-            data[index].email = newEmail;
-            renderData();
-        }
-    }
-
-    // Function to delete existing data
-    function deleteData(index) {
-        if (confirm('Are you sure you want to delete this entry?')) {
-            data.splice(index, 1);
-            renderData();
-        }
-    }
-
-    // Event listener for form submission
-    addForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        if (name && email) {
-            addData(name, email);
-            addForm.reset();
-        } else {
-            alert('Please enter name and email');
-        }
-    });
-
-    // Initial rendering
-    renderData();
-</script>
-
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>
