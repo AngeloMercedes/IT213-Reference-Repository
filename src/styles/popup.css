@@ -1,0 +1,67 @@
+/* popup container */
+.popup {
+    display: none; /* Initially hidden */
+    position: fixed; /* Fixed position */
+    z-index: 1; /* On top of other elements */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Scrollable */
+    background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
+}
+
+/* popup content */
+.popup-content {
+    background-color: white;
+    margin: 15% auto; /* Centered */
+    padding: 20px;
+    border: 1px solid #ccc;
+    width: 300px; /* Set popup width */
+    border-radius: 8px; /* Rounded corners */
+}
+
+/* Close button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: black;
+    cursor: pointer;
+}
+
+/* Style for the form elements */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+input {
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: 'Roboto Mono', monospace;
+}
+
+/* Style for the button */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}

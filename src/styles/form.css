@@ -1,0 +1,36 @@
+/* Style for form elements */
+form {
+    font-family: 'Roboto Mono', monospace; /* Apply Roboto Mono font */
+    padding: 20px; /* Add padding */
+    border: 1px solid #ccc; /* Add a border */
+    border-radius: 5px; /* Add border radius */
+}
+
+/* Style for input and textarea elements */
+input, textarea {
+    font-family: 'Roboto Mono', monospace; /* Apply Roboto Mono font */
+    font-size: 16px; /* Set font size */
+    padding: 10px; /* Add padding */
+    border: 1px solid #ccc; /* Add a border */
+    border-radius: 4px; /* Add border radius */
+    margin-bottom: 10px; /* Add bottom margin */
+    width: calc(100% - 20px); /* Set width of elements */
+}
+
+/* Style for buttons */
+button {
+    font-family: 'Roboto Mono', monospace; /* Apply Roboto Mono font */
+    font-size: 16px; /* Set font size */
+    padding: 10px 20px; /* Add padding */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Add border radius */
+    background-color: #4CAF50; /* Set background color */
+    color: white; /* Set text color */
+    cursor: pointer; /* Show pointer cursor */
+    transition: background-color 0.3s ease; /* Add transition effect */
+}
+
+/* Hover effect for buttons */
+button:hover {
+    background-color: #45a049; /* Change background color on hover */
+}
