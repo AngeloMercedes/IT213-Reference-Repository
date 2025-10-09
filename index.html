@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SJC MainteBot</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>SJC MainteBot (Mobile)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
@@ -13,157 +12,118 @@
     --brand-2:#2563eb;
     --bg-grad-1:#4facfe;
     --bg-grad-2:#00f2fe;
-    --card:rgba(255,255,255,0.9);
+    --card:rgba(255,255,255,0.95);
     --text:#0f172a;
     --muted:#6b7280;
     --bot:#e5e5ea;
     --user:#004aad;
   }
-  *{box-sizing:border-box}
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
   body{
     font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     background:linear-gradient(135deg,var(--bg-grad-1),var(--bg-grad-2));
-    min-height:100vh; margin:0; padding:24px;
-    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
   }
 
-  /* Floating launcher (optional) */
-  .launcher{
-    position:fixed; right:20px; bottom:20px; z-index:50;
+  /* Hide on desktop/tablet */
+  @media (min-width:768px){
+    body::before{
+      content:"📱 This chatbot is available only on mobile devices.";
+      font-size:18px; color:#fff; text-align:center; padding:20px;
+      line-height:1.5;
+    }
+    .chat-container,.launcher{display:none!important}
   }
-  .launcher button{
-    width:56px; height:56px; border-radius:50%;
-    border:none; cursor:pointer;
-    background:linear-gradient(135deg,var(--brand),var(--brand-2));
-    color:#fff; font-size:22px; box-shadow:0 10px 30px rgba(0,0,0,.25);
-    transition:transform .15s ease, opacity .2s ease;
-  }
-  .launcher button:hover{ transform:translateY(-2px) }
 
   /* Chat container */
   .chat-container{
-    width:420px; max-width:92vw; height:640px; max-height:86vh;
-    background:var(--card); backdrop-filter: blur(12px);
-    border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.25);
-    display:flex; flex-direction:column; overflow:hidden;
-    animation:fadeIn .5s ease;
+    width:100%; max-width:420px; height:100vh;
+    background:var(--card); backdrop-filter:blur(10px);
+    display:flex; flex-direction:column;
+    box-shadow:0 10px 40px rgba(0,0,0,0.2);
+    animation:fadeIn .4s ease;
   }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
   .chat-header{
     background:linear-gradient(135deg,var(--brand),var(--brand-2));
-    color:#fff; padding:14px 16px; display:flex; gap:10px;
-    align-items:center; justify-content:space-between;
+    color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;
   }
-  .chat-title{ display:flex; align-items:center; gap:10px; font-weight:700 }
+  .chat-title{display:flex;align-items:center;gap:8px;font-weight:700}
   .chat-title .logo{
-    width:28px; height:28px; border-radius:50%;
-    background:#fff; color:var(--brand);
-    display:grid; place-items:center; font-weight:800;
+    width:26px;height:26px;border-radius:50%;background:#fff;color:var(--brand);
+    display:grid;place-items:center;font-weight:800;
   }
-  .header-actions{ display:flex; gap:8px; align-items:center }
   .header-actions button{
-    border:none; background:transparent; color:#fff; cursor:pointer; font-size:18px;
-    opacity:.9; transition:opacity .2s ease
+    border:none;background:transparent;color:#fff;font-size:16px;cursor:pointer;opacity:.9;
   }
-  .header-actions button:hover{opacity:1}
 
   .chat-box{
-    flex:1; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;
+    flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;
     background:linear-gradient(180deg,#f8fafc,#eef2ff 30%, #f9fafb);
   }
+
   .day-divider{
-    align-self:center; font-size:12px; color:var(--muted);
-    background:#fff; border:1px solid #e5e7eb; padding:3px 10px; border-radius:999px;
+    align-self:center;font-size:12px;color:var(--muted);
+    background:#fff;border:1px solid #e5e7eb;padding:3px 10px;border-radius:999px;
     margin:4px 0 8px;
   }
 
   .message{
-    max-width:80%; padding:12px 14px; border-radius:16px; font-size:14px; line-height:1.45;
-    display:flex; gap:10px; position:relative; word-wrap:break-word; white-space:pre-wrap;
-    animation:pop .2s ease; box-shadow:0 2px 10px rgba(0,0,0,.06);
+    max-width:80%; padding:10px 12px; border-radius:16px; font-size:14px; line-height:1.45;
+    display:flex; gap:8px; word-wrap:break-word; white-space:pre-wrap;
+    animation:pop .2s ease; box-shadow:0 2px 8px rgba(0,0,0,.06);
   }
-  @keyframes pop{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  .bot-message{
-    align-self:flex-start; background:var(--bot); color:#000;
-    border-bottom-left-radius:6px;
-  }
-  .user-message{
-    align-self:flex-end; background:var(--user); color:#fff;
-    border-bottom-right-radius:6px;
-  }
-  .avatar{ width:28px; height:28px; border-radius:50%; flex:0 0 auto; overflow:hidden }
-  .avatar img{ width:100%; height:100%; object-fit:cover }
-  .bubble{ display:flex; flex-direction:column; gap:6px }
+  .bot-message{align-self:flex-start;background:var(--bot);color:#000;border-bottom-left-radius:6px;}
+  .user-message{align-self:flex-end;background:var(--user);color:#fff;border-bottom-right-radius:6px;}
 
-  .meta{
-    font-size:11px; opacity:.8;
-  }
+  .avatar{width:24px;height:24px;border-radius:50%;overflow:hidden}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .bubble{display:flex;flex-direction:column;gap:6px}
+  .meta{font-size:11px;opacity:.8}
 
-  /* Typing indicator */
-  .typing{ display:flex; gap:5px; align-items:center }
-  .dot{
-    width:6px; height:6px; background:#737373; border-radius:50%;
-    animation:blink 1s infinite ease-in-out;
-  }
-  .dot:nth-child(2){ animation-delay:.15s }
-  .dot:nth-child(3){ animation-delay:.3s }
-  @keyframes blink{ 0%,80%,100%{opacity:.3} 40%{opacity:1} }
+  .typing{display:flex;gap:5px;align-items:center}
+  .dot{width:6px;height:6px;background:#737373;border-radius:50%;animation:blink 1s infinite ease-in-out;}
+  .dot:nth-child(2){animation-delay:.15s}
+  .dot:nth-child(3){animation-delay:.3s}
+  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
 
-  /* Quick replies */
-  .quick-replies{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px }
+  .quick-replies{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
   .chip{
-    background:#111827; color:#fff; opacity:.9; border:none; border-radius:999px;
-    padding:6px 10px; font-size:12px; cursor:pointer; transition:transform .1s ease, opacity .2s;
+    background:#111827;color:#fff;opacity:.9;border:none;border-radius:999px;
+    padding:6px 10px;font-size:12px;cursor:pointer;
   }
-  .chip:hover{ transform:translateY(-1px); opacity:1 }
 
-  /* In-chat report form */
-  .report-card{
-    background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;
-  }
-  .row{ display:flex; gap:8px }
-  .row > *{ flex:1 }
-  input[type="text"], textarea, select{
-    width:100%; padding:10px; border:1px solid #d1d5db; border-radius:10px; font-size:14px; outline:none;
-  }
-  textarea{ min-height:80px; resize:vertical }
-  .btn{
-    background:var(--brand); color:#fff; border:none; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:600;
-  }
-  .btn.secondary{ background:#111827 }
-  .btn:hover{ filter:brightness(.95) }
-
-  /* Input bar */
   .chat-input{
-    display:flex; gap:8px; border-top:1px solid #e5e7eb; padding:12px; background:#fff;
+    display:flex;gap:8px;border-top:1px solid #e5e7eb;padding:10px;background:#fff;
   }
   .chat-input input{
-    flex:1; padding:12px 14px; border:1px solid #d1d5db; border-radius:999px; font-size:14px; outline:none;
+    flex:1;padding:10px 12px;border:1px solid #d1d5db;border-radius:999px;font-size:14px;
   }
   .send{
-    width:42px; height:42px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; font-size:18px; cursor:pointer;
+    width:40px;height:40px;border-radius:50%;border:none;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;font-size:18px;cursor:pointer;
   }
 
-  /* Dark mode */
-  .dark body{ background:#0b1220 }
-  .dark .chat-container{ background:rgba(15,23,42,.9) }
-  .dark .chat-box{ background:linear-gradient(180deg,#0b1220,#0f172a) }
-  .dark .bot-message{ background:#1f2937; color:#e5e7eb }
-  .dark .user-message{ background:#1d4ed8 }
-  .dark .day-divider{ background:#0b1220; border-color:#1f2937; color:#9ca3af }
-  .dark .report-card{ background:#0b1220; border-color:#1f2937 }
-  .dark input[type="text"], .dark textarea, .dark select{ background:#0b1220; color:#e5e7eb; border-color:#374151 }
-  .dark .chat-input{ background:#0b1220; border-top-color:#1f2937 }
+  /* Report form */
+  .report-card{
+    background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;
+  }
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  .row>*{flex:1 1 100%}
+  input[type="text"],textarea,select{
+    width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;
+  }
+  textarea{min-height:80px;resize:vertical}
+  .btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-weight:600}
+  .btn.secondary{background:#111827}
 </style>
 </head>
 <body>
-
-<!-- Optional floating opener (if embedding on a page). If you only want the full chat visible, you can remove this. -->
-<div class="launcher" id="launcher" aria-hidden="false">
-  <button title="Open chat" onclick="toggleChat()">💬</button>
-</div>
 
 <div class="chat-container" id="chat">
   <div class="chat-header">
@@ -172,12 +132,11 @@
       <div>SJC MainteBot</div>
     </div>
     <div class="header-actions">
-      <button title="Toggle dark mode" onclick="toggleDark()">🌙</button>
-      <button title="Minimize" onclick="toggleChat()">—</button>
+      <button onclick="toggleDark()">🌙</button>
     </div>
   </div>
 
-  <div class="chat-box" id="chatBox" aria-live="polite">
+  <div class="chat-box" id="chatBox">
     <div class="day-divider" id="todayLabel"></div>
 
     <div class="message bot-message">
@@ -195,204 +154,69 @@
   </div>
 
   <div class="chat-input">
-    <input id="userInput" type="text" placeholder="Type your message… (Enter to send)"/>
+    <input id="userInput" type="text" placeholder="Type your message…"/>
     <button class="send" onclick="sendMessage()">➤</button>
   </div>
 </div>
 
 <script>
-  // ---- Utilities
-  const chatBox = document.getElementById('chatBox');
-  const userInput = document.getElementById('userInput');
-  const todayLabel = document.getElementById('todayLabel');
-  const greetTime = document.getElementById('greetTime');
+  const chatBox=document.getElementById('chatBox');
+  const userInput=document.getElementById('userInput');
+  const todayLabel=document.getElementById('todayLabel');
+  const greetTime=document.getElementById('greetTime');
 
   function timestamp(){
-    const d = new Date();
-    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    const d=new Date();
+    return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
   }
   function setDayDivider(){
-    const d = new Date();
-    todayLabel.textContent = d.toLocaleDateString(undefined, {weekday:'long', month:'short', day:'numeric'});
+    const d=new Date();
+    todayLabel.textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
   }
   setDayDivider();
-  greetTime.textContent = `Now • ${timestamp()}`;
+  greetTime.textContent=`Now • ${timestamp()}`;
 
-  function scrollToBottom(){
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
+  function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
   function addTyping(){
-    const el = document.createElement('div');
-    el.className = 'message bot-message';
-    el.id = 'typing';
-    el.innerHTML = `
-      <div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
-      <div class="bubble typing">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      </div>`;
-    chatBox.appendChild(el);
-    scrollToBottom();
+    const el=document.createElement('div');
+    el.className='message bot-message';
+    el.id='typing';
+    el.innerHTML=`<div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
+      <div class="bubble typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    chatBox.appendChild(el);scrollToBottom();
   }
-  function removeTyping(){
-    const t = document.getElementById('typing');
-    if(t) t.remove();
-  }
+  function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+  function toggleDark(){document.documentElement.classList.toggle('dark');}
 
-  // ---- Dark mode
-  function toggleDark(){
-    document.documentElement.classList.toggle('dark');
-  }
-
-  // ---- Launcher toggle
-  function toggleChat(){
-    const chat = document.getElementById('chat');
-    const launcher = document.getElementById('launcher');
-    const hidden = chat.style.display === 'none';
-    chat.style.display = hidden ? 'flex' : 'none';
-    launcher.setAttribute('aria-hidden', hidden ? 'true' : 'false');
-  }
-  // Start visible for demo:
-  document.getElementById('chat').style.display = 'flex';
-
-  // ---- Send message
   function userBubble(text){
-    const el = document.createElement('div');
-    el.className = 'message user-message';
-    el.innerHTML = `<div class="bubble">${escapeHtml(text)}<div class="meta">${timestamp()}</div></div>`;
+    const el=document.createElement('div');
+    el.className='message user-message';
+    el.innerHTML=`<div class="bubble">${escapeHtml(text)}<div class="meta">${timestamp()}</div></div>`;
     chatBox.appendChild(el);
   }
   function botBubble(html){
-    const el = document.createElement('div');
-    el.className = 'message bot-message';
-    el.innerHTML = `
-      <div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
+    const el=document.createElement('div');
+    el.className='message bot-message';
+    el.innerHTML=`<div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
       <div class="bubble">${html}<div class="meta">${timestamp()}</div></div>`;
     chatBox.appendChild(el);
   }
 
-  function quick(text){
-    userInput.value = text;
-    sendMessage();
-  }
-
+  function quick(text){userInput.value=text;sendMessage();}
   function sendMessage(){
-    const msg = userInput.value.trim();
-    if(!msg) return;
-
-    userBubble(msg);
-    userInput.value = '';
-    addTyping();
-
-    $.post('chatbot.php', {message: msg}, function(res){
+    const msg=userInput.value.trim();if(!msg)return;
+    userBubble(msg);userInput.value='';addTyping();
+    $.post('chatbot.php',{message:msg},function(res){
       removeTyping();
-
-      if(!res || !res.type){
-        botBubble('⚠️ Unexpected response from server.');
-        return;
-      }
-
-      if(res.type === 'report_form'){
-        botBubble(renderReportForm());
-      } else if(res.type === 'reply' || res.type === 'fallback' || res.type === 'error'){
-        botBubble(escapeHtml(res.reply));
-      } else {
-        botBubble('🤔 I\'m not sure how to handle that yet.');
-      }
+      if(!res||!res.type){botBubble('⚠️ Unexpected response from server.');return;}
+      if(res.type==='report_form'){botBubble(renderReportForm());}
+      else{botBubble(escapeHtml(res.reply||'...'));}
       scrollToBottom();
-    }, 'json').fail(function(){
-      removeTyping();
-      botBubble('⚠️ Error connecting to server.');
-      scrollToBottom();
-    });
+    },'json').fail(function(){removeTyping();botBubble('⚠️ Server error.');scrollToBottom();});
   }
 
-  // Enter key
-  userInput.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  // ---- Report form (frontend)
-  function renderReportForm(){
-    // Honeypot hidden field "title"
-    return `
-      <div class="report-card">
-        <div style="font-weight:700; display:flex; align-items:center; gap:8px;">📝 Maintenance Report</div>
-        <div class="row">
-          <input type="text" id="r_location" placeholder="Location (e.g., Bldg A, Room 102)">
-          <select id="r_priority" aria-label="Priority">
-            <option value="Normal">Priority: Normal</option>
-            <option value="High">Priority: High</option>
-            <option value="Urgent">Priority: Urgent</option>
-          </select>
-        </div>
-        <div class="row">
-          <input type="text" id="r_issue" placeholder="Issue (e.g., broken light)">
-          <input type="text" id="r_contact" placeholder="Your name or contact (optional)">
-        </div>
-        <textarea id="r_details" placeholder="Additional details…"></textarea>
-        <input type="text" id="title" style="position:absolute;left:-9999px;opacity:0;" tabindex="-1" autocomplete="off">
-        <div style="display:flex; gap:8px;">
-          <button class="btn" onclick="submitReport()">Submit Report</button>
-          <button class="btn secondary" onclick="prefillReport('Broken chair','Building B, Room 204')">Prefill</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function prefillReport(issue, loc){
-    const i = document.getElementById('r_issue'); if(i) i.value = issue;
-    const l = document.getElementById('r_location'); if(l) l.value = loc;
-    const d = document.getElementById('r_details'); if(d) d.value = 'Found during class; please check soon.';
-  }
-
-  function submitReport(){
-    const location = (document.getElementById('r_location')||{}).value?.trim();
-    const issue    = (document.getElementById('r_issue')||{}).value?.trim();
-    const details  = (document.getElementById('r_details')||{}).value?.trim() || '';
-    const contact  = (document.getElementById('r_contact')||{}).value?.trim() || '';
-    const priority = (document.getElementById('r_priority')||{}).value || 'Normal';
-    const honeypot = (document.getElementById('title')||{}).value?.trim(); // should stay empty
-
-    if(!location || !issue){
-      botBubble('⚠️ Please provide both Location and Issue.');
-      return;
-    }
-
-    addTyping();
-    fetch('report_save.php', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        location, issue, details, contact, priority,
-        // Simple client timestamp; server will add its own
-        client_time: new Date().toISOString(),
-        hp: honeypot
-      })
-    }).then(r=>r.json()).then(res=>{
-      removeTyping();
-      if(res && res.ok){
-        botBubble(`✅ Report submitted!<br><b>Ticket:</b> ${res.ticket}<br><b>Location:</b> ${escapeHtml(location)}<br><b>Issue:</b> ${escapeHtml(issue)}<br><i>You’ll receive updates from maintenance.</i>`);
-      }else{
-        botBubble('⚠️ Could not save report. Please try again later.');
-      }
-      scrollToBottom();
-    }).catch(()=>{
-      removeTyping();
-      botBubble('⚠️ Network error while saving the report.');
-      scrollToBottom();
-    });
-  }
-
-  // ---- Basic escaping
-  function escapeHtml(s=''){
-    return s.replace(/[&<>"'`=\/]/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
-    }[c]));
-  }
+  userInput.addEventListener('keydown',(e)=>{if(e.key==='Enter'){e.preventDefault();sendMessage();}});
+  function escapeHtml(s=''){return s.replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]));}
 </script>
 </body>
 </html>
