@@ -1,264 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SJC Scholarship Assistant Chatbot</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
-    <link rel="stylesheet" href="style.css"> 
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SJC MainteBot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+  :root{
+    --brand:#004aad;
+    --brand-2:#2563eb;
+    --bg-grad-1:#4facfe;
+    --bg-grad-2:#00f2fe;
+    --card:rgba(255,255,255,0.9);
+    --text:#0f172a;
+    --muted:#6b7280;
+    --bot:#e5e5ea;
+    --user:#004aad;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:linear-gradient(135deg,var(--bg-grad-1),var(--bg-grad-2));
+    min-height:100vh; margin:0; padding:24px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Floating launcher (optional) */
+  .launcher{
+    position:fixed; right:20px; bottom:20px; z-index:50;
+  }
+  .launcher button{
+    width:56px; height:56px; border-radius:50%;
+    border:none; cursor:pointer;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff; font-size:22px; box-shadow:0 10px 30px rgba(0,0,0,.25);
+    transition:transform .15s ease, opacity .2s ease;
+  }
+  .launcher button:hover{ transform:translateY(-2px) }
+
+  /* Chat container */
+  .chat-container{
+    width:420px; max-width:92vw; height:640px; max-height:86vh;
+    background:var(--card); backdrop-filter: blur(12px);
+    border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.25);
+    display:flex; flex-direction:column; overflow:hidden;
+    animation:fadeIn .5s ease;
+  }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+
+  .chat-header{
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff; padding:14px 16px; display:flex; gap:10px;
+    align-items:center; justify-content:space-between;
+  }
+  .chat-title{ display:flex; align-items:center; gap:10px; font-weight:700 }
+  .chat-title .logo{
+    width:28px; height:28px; border-radius:50%;
+    background:#fff; color:var(--brand);
+    display:grid; place-items:center; font-weight:800;
+  }
+  .header-actions{ display:flex; gap:8px; align-items:center }
+  .header-actions button{
+    border:none; background:transparent; color:#fff; cursor:pointer; font-size:18px;
+    opacity:.9; transition:opacity .2s ease
+  }
+  .header-actions button:hover{opacity:1}
+
+  .chat-box{
+    flex:1; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;
+    background:linear-gradient(180deg,#f8fafc,#eef2ff 30%, #f9fafb);
+  }
+  .day-divider{
+    align-self:center; font-size:12px; color:var(--muted);
+    background:#fff; border:1px solid #e5e7eb; padding:3px 10px; border-radius:999px;
+    margin:4px 0 8px;
+  }
+
+  .message{
+    max-width:80%; padding:12px 14px; border-radius:16px; font-size:14px; line-height:1.45;
+    display:flex; gap:10px; position:relative; word-wrap:break-word; white-space:pre-wrap;
+    animation:pop .2s ease; box-shadow:0 2px 10px rgba(0,0,0,.06);
+  }
+  @keyframes pop{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+
+  .bot-message{
+    align-self:flex-start; background:var(--bot); color:#000;
+    border-bottom-left-radius:6px;
+  }
+  .user-message{
+    align-self:flex-end; background:var(--user); color:#fff;
+    border-bottom-right-radius:6px;
+  }
+  .avatar{ width:28px; height:28px; border-radius:50%; flex:0 0 auto; overflow:hidden }
+  .avatar img{ width:100%; height:100%; object-fit:cover }
+  .bubble{ display:flex; flex-direction:column; gap:6px }
+
+  .meta{
+    font-size:11px; opacity:.8;
+  }
+
+  /* Typing indicator */
+  .typing{ display:flex; gap:5px; align-items:center }
+  .dot{
+    width:6px; height:6px; background:#737373; border-radius:50%;
+    animation:blink 1s infinite ease-in-out;
+  }
+  .dot:nth-child(2){ animation-delay:.15s }
+  .dot:nth-child(3){ animation-delay:.3s }
+  @keyframes blink{ 0%,80%,100%{opacity:.3} 40%{opacity:1} }
+
+  /* Quick replies */
+  .quick-replies{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px }
+  .chip{
+    background:#111827; color:#fff; opacity:.9; border:none; border-radius:999px;
+    padding:6px 10px; font-size:12px; cursor:pointer; transition:transform .1s ease, opacity .2s;
+  }
+  .chip:hover{ transform:translateY(-1px); opacity:1 }
+
+  /* In-chat report form */
+  .report-card{
+    background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;
+  }
+  .row{ display:flex; gap:8px }
+  .row > *{ flex:1 }
+  input[type="text"], textarea, select{
+    width:100%; padding:10px; border:1px solid #d1d5db; border-radius:10px; font-size:14px; outline:none;
+  }
+  textarea{ min-height:80px; resize:vertical }
+  .btn{
+    background:var(--brand); color:#fff; border:none; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:600;
+  }
+  .btn.secondary{ background:#111827 }
+  .btn:hover{ filter:brightness(.95) }
+
+  /* Input bar */
+  .chat-input{
+    display:flex; gap:8px; border-top:1px solid #e5e7eb; padding:12px; background:#fff;
+  }
+  .chat-input input{
+    flex:1; padding:12px 14px; border:1px solid #d1d5db; border-radius:999px; font-size:14px; outline:none;
+  }
+  .send{
+    width:42px; height:42px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff; font-size:18px; cursor:pointer;
+  }
+
+  /* Dark mode */
+  .dark body{ background:#0b1220 }
+  .dark .chat-container{ background:rgba(15,23,42,.9) }
+  .dark .chat-box{ background:linear-gradient(180deg,#0b1220,#0f172a) }
+  .dark .bot-message{ background:#1f2937; color:#e5e7eb }
+  .dark .user-message{ background:#1d4ed8 }
+  .dark .day-divider{ background:#0b1220; border-color:#1f2937; color:#9ca3af }
+  .dark .report-card{ background:#0b1220; border-color:#1f2937 }
+  .dark input[type="text"], .dark textarea, .dark select{ background:#0b1220; color:#e5e7eb; border-color:#374151 }
+  .dark .chat-input{ background:#0b1220; border-top-color:#1f2937 }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="chat-header">
-            <div class="header-icon">🎓</div>
-            <div class="header-content">
-                <h1>SJC Scholarship Assistant</h1>
-                <div class="header-status">
-                    <span class="status-dot"></span>
-                    <span>Online • LLM Ready</span>
-                </div>
-            </div>
-            <button class="clear-chat-button" onclick="clearChat()">🗑️ Clear Chat</button>
-        </div>
-        
-        <div class="quick-actions">
-            <button class="quick-action" onclick="sendQuickMessage('Types of scholarships')">📋 Types</button>
-            <button class="quick-action" onclick="sendQuickMessage('CHED scholarship')">🏛️ CHED</button>
-            <button class="quick-action" onclick="sendQuickMessage('How to apply')">✍️ Apply</button>
-            <button class="quick-action" onclick="sendQuickMessage('Contact info')">📞 Contact</button>
-            <button class="quick-action" onclick="sendQuickMessage('Grade requirements')">📊 Grades</button>
-            <button class="quick-action" onclick="sendQuickMessage('All scholarships')">📚 All</button>
-        </div>
-        
-        <div class="messages-container" id="messagesContainer">
-            </div>
-        
-        <div class="input-container">
-            <div class="input-wrapper">
-                <input 
-                    type="text" 
-                    id="messageInput" 
-                    placeholder="Ask me about scholarships..." 
-                    autocomplete="off"
-                    onkeypress="handleKeyPress(event)"
-                >
-                <button id="sendButton" onclick="sendMessage()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
-            </div>
-        </div>
+
+<!-- Optional floating opener (if embedding on a page). If you only want the full chat visible, you can remove this. -->
+<div class="launcher" id="launcher" aria-hidden="false">
+  <button title="Open chat" onclick="toggleChat()">💬</button>
+</div>
+
+<div class="chat-container" id="chat">
+  <div class="chat-header">
+    <div class="chat-title">
+      <div class="logo">SJ</div>
+      <div>SJC MainteBot</div>
     </div>
-    
-    <script>
-        // Define the API endpoint
-        const API_ENDPOINT = 'api.php'; 
-        
-        const messagesContainer = document.getElementById('messagesContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        
-        // --- Utility Functions ---
+    <div class="header-actions">
+      <button title="Toggle dark mode" onclick="toggleDark()">🌙</button>
+      <button title="Minimize" onclick="toggleChat()">—</button>
+    </div>
+  </div>
 
-        function scrollToBottom() {
-            setTimeout(() => {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 10);
-        }
-        
-        function getCurrentTime() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const displayHours = hours % 12 || 12;
-            return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
-        }
-        
-        function addMessage(type, text, time) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            let avatar = '';
-            if (type === 'bot') {
-                avatar = '<div class="bot-avatar">🤖</div>';
-            }
-            
-            // Basic sanitization for display
-            const sanitizedText = text.replace(/[&<>"']/g, (m) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m]));
-            
-            messageDiv.innerHTML = `
-                ${avatar}
-                <div class="message-content">
-                    <div class="message-text">${sanitizedText.replace(/\n/g, '<br>')}</div>
-                    <span class="message-time">${time}</span>
-                </div>
-            `;
-            
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-        }
+  <div class="chat-box" id="chatBox" aria-live="polite">
+    <div class="day-divider" id="todayLabel"></div>
 
-        const TYPING_INDICATOR_ID = 'typing-indicator';
+    <div class="message bot-message">
+      <div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
+      <div class="bubble">
+        <div>👋 Hello! I’m your maintenance assistant. Ask about office hours, location, or <b>report an issue</b>.</div>
+        <div class="quick-replies">
+          <button class="chip" onclick="quick('Where is the maintenance office?')">📍 Office</button>
+          <button class="chip" onclick="quick('What are the office hours?')">🕒 Hours</button>
+          <button class="chip" onclick="quick('Report a broken light')">📝 Report issue</button>
+        </div>
+        <div class="meta" id="greetTime"></div>
+      </div>
+    </div>
+  </div>
 
-        function showTypingIndicator() {
-            let indicator = document.getElementById(TYPING_INDICATOR_ID);
-            if (indicator) return TYPING_INDICATOR_ID; 
+  <div class="chat-input">
+    <input id="userInput" type="text" placeholder="Type your message… (Enter to send)"/>
+    <button class="send" onclick="sendMessage()">➤</button>
+  </div>
+</div>
 
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message bot';
-            typingDiv.id = TYPING_INDICATOR_ID;
-            
-            typingDiv.innerHTML = `
-                <div class="bot-avatar">🤖</div>
-                <div class="message-content">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
-            
-            messagesContainer.appendChild(typingDiv);
-            scrollToBottom();
-            return TYPING_INDICATOR_ID;
-        }
-        
-        function removeTypingIndicator(id) {
-            const indicator = document.getElementById(id);
-            if (indicator) {
-                indicator.remove();
-            }
-        }
+<script>
+  // ---- Utilities
+  const chatBox = document.getElementById('chatBox');
+  const userInput = document.getElementById('userInput');
+  const todayLabel = document.getElementById('todayLabel');
+  const greetTime = document.getElementById('greetTime');
 
-        // --- Core Functions ---
+  function timestamp(){
+    const d = new Date();
+    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+  function setDayDivider(){
+    const d = new Date();
+    todayLabel.textContent = d.toLocaleDateString(undefined, {weekday:'long', month:'short', day:'numeric'});
+  }
+  setDayDivider();
+  greetTime.textContent = `Now • ${timestamp()}`;
 
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault(); 
-                sendMessage();
-            }
-        }
-        
-        async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message) return;
-            
-            messageInput.disabled = true;
-            sendButton.disabled = true;
-            
-            const userTime = getCurrentTime();
+  function scrollToBottom(){
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-            addMessage('user', message, userTime);
-            messageInput.value = '';
-            
-            const typingId = showTypingIndicator();
-            
-            try {
-                const formData = new FormData();
-                formData.append('action', 'send_message');
-                formData.append('message', message);
-                
-                const response = await fetch(API_ENDPOINT, { 
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+  function addTyping(){
+    const el = document.createElement('div');
+    el.className = 'message bot-message';
+    el.id = 'typing';
+    el.innerHTML = `
+      <div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
+      <div class="bubble typing">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>`;
+    chatBox.appendChild(el);
+    scrollToBottom();
+  }
+  function removeTyping(){
+    const t = document.getElementById('typing');
+    if(t) t.remove();
+  }
 
-                const data = await response.json();
-                
-                removeTypingIndicator(typingId);
-                
-                if (data.success) {
-                    setTimeout(() => {
-                        addMessage('bot', data.response, data.time);
-                    }, 300); 
-                } else {
-                    addMessage('bot', `Error: ${data.error || 'The server returned an unsuccessful response.'}`, getCurrentTime());
-                }
-            } catch (error) {
-                console.error('Fetch error:', error);
-                removeTypingIndicator(typingId);
-                addMessage('bot', 'Sorry, there was a network or server error. Please check your connection and try again. (' + error.message + ')', getCurrentTime());
-            } finally {
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                messageInput.focus();
-            }
-        }
-        
-        function sendQuickMessage(message) {
-            messageInput.value = message;
-            sendMessage();
-        }
+  // ---- Dark mode
+  function toggleDark(){
+    document.documentElement.classList.toggle('dark');
+  }
 
-        async function clearChat() {
-            if (!confirm("Are you sure you want to clear the chat history?")) return;
+  // ---- Launcher toggle
+  function toggleChat(){
+    const chat = document.getElementById('chat');
+    const launcher = document.getElementById('launcher');
+    const hidden = chat.style.display === 'none';
+    chat.style.display = hidden ? 'flex' : 'none';
+    launcher.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+  }
+  // Start visible for demo:
+  document.getElementById('chat').style.display = 'flex';
 
-            messagesContainer.innerHTML = '';
-            
-            try {
-                const formData = new FormData();
-                formData.append('action', 'clear_chat');
-                
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    body: formData
-                });
+  // ---- Send message
+  function userBubble(text){
+    const el = document.createElement('div');
+    el.className = 'message user-message';
+    el.innerHTML = `<div class="bubble">${escapeHtml(text)}<div class="meta">${timestamp()}</div></div>`;
+    chatBox.appendChild(el);
+  }
+  function botBubble(html){
+    const el = document.createElement('div');
+    el.className = 'message bot-message';
+    el.innerHTML = `
+      <div class="avatar"><img src="https://i.imgur.com/7k12EPD.png" alt="bot"></div>
+      <div class="bubble">${html}<div class="meta">${timestamp()}</div></div>`;
+    chatBox.appendChild(el);
+  }
 
-                const data = await response.json();
+  function quick(text){
+    userInput.value = text;
+    sendMessage();
+  }
 
-                if (data.success) {
-                    addMessage('bot', 'Chat cleared. How can I help you?', getCurrentTime());
-                } else {
-                    alert("Error clearing chat on the server. Please refresh the page.");
-                }
+  function sendMessage(){
+    const msg = userInput.value.trim();
+    if(!msg) return;
 
-            } catch (error) {
-                console.error('Clear chat error:', error);
-                alert("Network error while clearing chat. Please try refreshing the page.");
-            }
-        }
+    userBubble(msg);
+    userInput.value = '';
+    addTyping();
 
-        async function loadChatHistory() {
-            try {
-                const formData = new FormData();
-                formData.append('action', 'load_history');
-                
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+    $.post('chatbot.php', {message: msg}, function(res){
+      removeTyping();
 
-                const data = await response.json();
-                
-                if (data.success && data.history) {
-                    data.history.forEach(msg => {
-                        addMessage(msg.type, msg.message, msg.time);
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading history:', error);
-                // Optionally show an error message to the user
-            }
-        }
-        
-        // Initial setup
-        window.onload = () => {
-            loadChatHistory();
-            messageInput.focus();
-        };
+      if(!res || !res.type){
+        botBubble('⚠️ Unexpected response from server.');
+        return;
+      }
 
-    </script>
+      if(res.type === 'report_form'){
+        botBubble(renderReportForm());
+      } else if(res.type === 'reply' || res.type === 'fallback' || res.type === 'error'){
+        botBubble(escapeHtml(res.reply));
+      } else {
+        botBubble('🤔 I\'m not sure how to handle that yet.');
+      }
+      scrollToBottom();
+    }, 'json').fail(function(){
+      removeTyping();
+      botBubble('⚠️ Error connecting to server.');
+      scrollToBottom();
+    });
+  }
+
+  // Enter key
+  userInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // ---- Report form (frontend)
+  function renderReportForm(){
+    // Honeypot hidden field "title"
+    return `
+      <div class="report-card">
+        <div style="font-weight:700; display:flex; align-items:center; gap:8px;">📝 Maintenance Report</div>
+        <div class="row">
+          <input type="text" id="r_location" placeholder="Location (e.g., Bldg A, Room 102)">
+          <select id="r_priority" aria-label="Priority">
+            <option value="Normal">Priority: Normal</option>
+            <option value="High">Priority: High</option>
+            <option value="Urgent">Priority: Urgent</option>
+          </select>
+        </div>
+        <div class="row">
+          <input type="text" id="r_issue" placeholder="Issue (e.g., broken light)">
+          <input type="text" id="r_contact" placeholder="Your name or contact (optional)">
+        </div>
+        <textarea id="r_details" placeholder="Additional details…"></textarea>
+        <input type="text" id="title" style="position:absolute;left:-9999px;opacity:0;" tabindex="-1" autocomplete="off">
+        <div style="display:flex; gap:8px;">
+          <button class="btn" onclick="submitReport()">Submit Report</button>
+          <button class="btn secondary" onclick="prefillReport('Broken chair','Building B, Room 204')">Prefill</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function prefillReport(issue, loc){
+    const i = document.getElementById('r_issue'); if(i) i.value = issue;
+    const l = document.getElementById('r_location'); if(l) l.value = loc;
+    const d = document.getElementById('r_details'); if(d) d.value = 'Found during class; please check soon.';
+  }
+
+  function submitReport(){
+    const location = (document.getElementById('r_location')||{}).value?.trim();
+    const issue    = (document.getElementById('r_issue')||{}).value?.trim();
+    const details  = (document.getElementById('r_details')||{}).value?.trim() || '';
+    const contact  = (document.getElementById('r_contact')||{}).value?.trim() || '';
+    const priority = (document.getElementById('r_priority')||{}).value || 'Normal';
+    const honeypot = (document.getElementById('title')||{}).value?.trim(); // should stay empty
+
+    if(!location || !issue){
+      botBubble('⚠️ Please provide both Location and Issue.');
+      return;
+    }
+
+    addTyping();
+    fetch('report_save.php', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        location, issue, details, contact, priority,
+        // Simple client timestamp; server will add its own
+        client_time: new Date().toISOString(),
+        hp: honeypot
+      })
+    }).then(r=>r.json()).then(res=>{
+      removeTyping();
+      if(res && res.ok){
+        botBubble(`✅ Report submitted!<br><b>Ticket:</b> ${res.ticket}<br><b>Location:</b> ${escapeHtml(location)}<br><b>Issue:</b> ${escapeHtml(issue)}<br><i>You’ll receive updates from maintenance.</i>`);
+      }else{
+        botBubble('⚠️ Could not save report. Please try again later.');
+      }
+      scrollToBottom();
+    }).catch(()=>{
+      removeTyping();
+      botBubble('⚠️ Network error while saving the report.');
+      scrollToBottom();
+    });
+  }
+
+  // ---- Basic escaping
+  function escapeHtml(s=''){
+    return s.replace(/[&<>"'`=\/]/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+    }[c]));
+  }
+</script>
 </body>
 </html>
