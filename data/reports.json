@@ -1,0 +1,14 @@
+[
+    {
+        "ticket": "SJC-4D6224",
+        "location": "gsdgdsg",
+        "issue": "dsgsdg",
+        "details": "gdsgdsds",
+        "contact": "gelo",
+        "priority": "High",
+        "client_time": "2025-08-21T11:11:12.692Z",
+        "server_time": "2025-08-21T13:11:12+02:00",
+        "ip": "::1",
+        "ua": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36"
+    }
+]
