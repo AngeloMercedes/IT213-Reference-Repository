@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SJC Scholarship Assistant Chatbot</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="container">
+        <div class="chat-header">
+            <div class="header-icon">🎓</div>
+            <div class="header-content">
+                <h1>SJC Scholarship Assistant</h1>
+                <div class="header-status">
+                    <span class="status-dot"></span>
+                    <span>Online • LLM Ready</span>
+                </div>
+            </div>
+            <button class="clear-chat-button" onclick="clearChat()">🗑️ Clear Chat</button>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-action" onclick="sendQuickMessage('Types of scholarships')">📋 Types</button>
+            <button class="quick-action" onclick="sendQuickMessage('CHED scholarship')">🏛️ CHED</button>
+            <button class="quick-action" onclick="sendQuickMessage('How to apply')">✍️ Apply</button>
+            <button class="quick-action" onclick="sendQuickMessage('Contact info')">📞 Contact</button>
+            <button class="quick-action" onclick="sendQuickMessage('Grade requirements')">📊 Grades</button>
+            <button class="quick-action" onclick="sendQuickMessage('All scholarships')">📚 All</button>
+        </div>
+        
+        <div class="messages-container" id="messagesContainer">
+            </div>
+        
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Ask me about scholarships..." 
+                    autocomplete="off"
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button id="sendButton" onclick="sendMessage()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Define the API endpoint
+        const API_ENDPOINT = 'api.php'; 
+        
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        
+        // --- Utility Functions ---
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 10);
+        }
+        
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+        }
+        
+        function addMessage(type, text, time) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let avatar = '';
+            if (type === 'bot') {
+                avatar = '<div class="bot-avatar">🤖</div>';
+            }
+            
+            // Basic sanitization for display
+            const sanitizedText = text.replace(/[&<>"']/g, (m) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m]));
+            
+            messageDiv.innerHTML = `
+                ${avatar}
+                <div class="message-content">
+                    <div class="message-text">${sanitizedText.replace(/\n/g, '<br>')}</div>
+                    <span class="message-time">${time}</span>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        const TYPING_INDICATOR_ID = 'typing-indicator';
+
+        function showTypingIndicator() {
+            let indicator = document.getElementById(TYPING_INDICATOR_ID);
+            if (indicator) return TYPING_INDICATOR_ID; 
+
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = TYPING_INDICATOR_ID;
+            
+            typingDiv.innerHTML = `
+                <div class="bot-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            scrollToBottom();
+            return TYPING_INDICATOR_ID;
+        }
+        
+        function removeTypingIndicator(id) {
+            const indicator = document.getElementById(id);
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // --- Core Functions ---
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                sendMessage();
+            }
+        }
+        
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            
+            const userTime = getCurrentTime();
+
+            addMessage('user', message, userTime);
+            messageInput.value = '';
+            
+            const typingId = showTypingIndicator();
+            
+            try {
+                const formData = new FormData();
+                formData.append('action', 'send_message');
+                formData.append('message', message);
+                
+                const response = await fetch(API_ENDPOINT, { 
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                removeTypingIndicator(typingId);
+                
+                if (data.success) {
+                    setTimeout(() => {
+                        addMessage('bot', data.response, data.time);
+                    }, 300); 
+                } else {
+                    addMessage('bot', `Error: ${data.error || 'The server returned an unsuccessful response.'}`, getCurrentTime());
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                removeTypingIndicator(typingId);
+                addMessage('bot', 'Sorry, there was a network or server error. Please check your connection and try again. (' + error.message + ')', getCurrentTime());
+            } finally {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+        
+        function sendQuickMessage(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+
+        async function clearChat() {
+            if (!confirm("Are you sure you want to clear the chat history?")) return;
+
+            messagesContainer.innerHTML = '';
+            
+            try {
+                const formData = new FormData();
+                formData.append('action', 'clear_chat');
+                
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage('bot', 'Chat cleared. How can I help you?', getCurrentTime());
+                } else {
+                    alert("Error clearing chat on the server. Please refresh the page.");
+                }
+
+            } catch (error) {
+                console.error('Clear chat error:', error);
+                alert("Network error while clearing chat. Please try refreshing the page.");
+            }
+        }
+
+        async function loadChatHistory() {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'load_history');
+                
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success && data.history) {
+                    data.history.forEach(msg => {
+                        addMessage(msg.type, msg.message, msg.time);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                // Optionally show an error message to the user
+            }
+        }
+        
+        // Initial setup
+        window.onload = () => {
+            loadChatHistory();
+            messageInput.focus();
+        };
+
+    </script>
+</body>
+</html>
