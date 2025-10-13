@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SJC ScholarBot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --dark: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1a3e 50%, #0f172a 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 20px 32px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 24px;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .header-text h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            padding: 24px 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .sidebar {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            height: fit-content;
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-section h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .sidebar-item {
+            padding: 10px 12px;
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .sidebar-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateX(4px);
+        }
+
+        .chat-container {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: calc(100vh - 220px);
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .chat-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .chat-header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 4px 0 0 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        .message {
+            display: flex;
+            animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 12px 12px 4px 12px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .message.bot .message-content {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 12px 12px 12px 4px;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .suggestion-btn {
+            padding: 7px 14px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .suggestion-btn:hover {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .input-form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            resize: none;
+            max-height: 100px;
+            transition: all 0.2s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(30, 41, 59, 0.95);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: var(--muted);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 12px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 12px 12px 12px 4px;
+            width: fit-content;
+            max-width: 70%;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.5;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-8px);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            header {
+                padding: 16px;
+            }
+
+            .header-text h1 {
+                font-size: 22px;
+            }
+
+            .chat-container {
+                height: calc(100vh - 180px);
+            }
+
+            .chat-messages {
+                padding: 16px;
+            }
+
+            .message-content {
+                max-width: 90%;
+                font-size: 13px;
+            }
+
+            .send-btn {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">SJC</div>
+            <div class="header-text">
+                <h1>ScholarBot</h1>
+                <p>Saint Joseph College Scholarship Assistant</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>Quick Access</h3>
+            <div id="sidebarContent"></div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>Ask About Scholarships</h2>
+                <p>Get instant answers about SJC scholarship programs</p>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div class="chat-input-area">
+                <form class="input-form" id="chatForm">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input" 
+                        placeholder="Type your question here..."
+                        rows="1"
+                    ></textarea>
+                    <button type="submit" class="send-btn" id="sendBtn">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FAQ = {
+            keywords: {
+                'function|office function|office role|office purpose': {
+                    answer: 'The Scholarship Office is a function of the Student Affairs and Services Office. It handles or facilitates scholarship opportunities, starting from application to fund payouts.',
+                    category: 'Office Info',
+                    suggestions: ['Where is the office located?', 'Who is the Director?', 'Contact numbers']
+                },
+                'location|where is the office|office address|Scholarship Office located': {
+                    answer: 'The Scholarship Office is located at the ground floor, 2nd Door Room 119, College Building – Main Campus, Saint Joseph College, Maasin City, Southern Leyte.',
+                    category: 'Office Info',
+                    suggestions: ['Who are the staff?', 'What is the function of the office?']
+                },
+                'Director|Director name|Head of Scholarship Office': {
+                    answer: 'The Director of the Scholarship Office is Joenisa M. Hoyla.',
+                    category: 'Office Info',
+                    suggestions: ['Staff members', 'Contact numbers']
+                },
+                'staff|staff members|office personnel': {
+                    answer: 'The staff members of the Scholarship Office are Lara O. Orais and Zaneth O. Mulig.',
+                    category: 'Office Info',
+                    suggestions: ['Director name', 'Contact numbers']
+                },
+                'Facebook|page|social media': {
+                    answer: 'The Facebook page is D\' JOSEPHIAN ESKOLARS & Student Affairs and Services Office.',
+                    category: 'Office Info',
+                    suggestions: ['Mobile number', 'Landline number']
+                },
+                'contact|mobile|cell number|phone': {
+                    answer: 'You may contact them through 0947-3855424 or 0927-0182744.',
+                    category: 'Office Info',
+                    suggestions: ['Landline number', 'Facebook page']
+                },
+                'landline|office telephone': {
+                    answer: 'The landline number for the Scholarship Office is (053) 570–8448 local 110.',
+                    category: 'Office Info',
+                    suggestions: ['Mobile number', 'Office location']
+                },
+                'types of scholarships|scholarship categories|main types|SJC offers': {
+                    answer: 'SJC offers four main types of scholarships: 1. Government-funded Scholarships/Assistance; 2. Diocese-funded Scholarships/Assistance; 3. School-funded Scholarships/Financial Assistance and Discounts; 4. Alumni-funded Scholarships/Assistance.',
+                    category: 'General Scholarships',
+                    suggestions: ['List all scholarships', 'Government-funded scholarships', 'School-funded scholarships']
+                },
+                'list all scholarships|all scholarships offered': {
+                    answer: "The scholarships offered are: CHED Merit, TES-UNIFAST, TDP/TINGOG, CoScho, Diocesan, CORE, YSLEP/Caritas Manila, SJC KAST, SJC Chorale, Varsity, Academic, Employee Special Discount, Group Discount, Presidential, Special Discount for Alumni Parents, Cash Discount, Senior High School Discount, Academic Excellence Discount, Working Scholars, Student Leaders, J/MAG Editor-in-Chief, ROTC Commandant, Chief Criminology Intern/Internal Affairs Service, Indigenous People, High School Alumni Foundation, and Adopt-A-Student Program.",
+                    category: 'General Scholarships',
+                    suggestions: ['Government-funded scholarships', 'School-funded scholarships', 'Scholarships for low-income']
+                },
+                'government-funded|CHED|UNIFAST|TDP|CoScho': {
+                    answer: 'The government-funded scholarships are: CHED Merit Scholarship Program (CMSP), Tertiary Education Subsidy (TES-UNIFAST), Tulong Dunong Program (TDP/TINGOG), and CoScho Coconut Scholarship Program.',
+                    category: 'Government-Funded',
+                    suggestions: ['What is CHED Merit?', 'What is TES?', 'CoScho requirements']
+                },
+                'diocese-funded|diocesan|CORE|YSLEP|Caritas Manila': {
+                    answer: 'The diocese-funded scholarships are: Diocesan Scholarship, CORE, and YSLEP/Caritas Manila.',
+                    category: 'Diocese-Funded',
+                    suggestions: ['Diocesan Scholarship requirements', 'What is CORE?', 'What is YSLEP/Caritas Manila?']
+                },
+                'school-funded|discounts|SJC KAST|Chorale|Varsity|Academic|Working Scholars': {
+                    answer: 'The school-funded scholarships and discounts are numerous, including SJC KAST Dance Troupe, SJC Chorale, Varsity, Academic, Employee Special Discount, Group Discount, Presidential, Special Discount for Alumni Parents, Cash Discount, Senior High School Discount, Academic Excellence Discount, Working Scholars Program, Student Leaders, J/MAG EIC, ROTC Commandant, Chief Criminology Intern, and Indigenous People Scholarship.',
+                    category: 'School-Funded',
+                    suggestions: ['What is Academic Scholarship?', 'What is Working Scholars Program?', 'Discounts for honors']
+                },
+                'alumni-funded|alumni scholarship|Adopt-A-Student': {
+                    answer: 'The alumni-funded scholarships are the High School Alumni Foundation Scholarship and the Adopt-A-Student Program.',
+                    category: 'Alumni-Funded',
+                    suggestions: ['High School Alumni Foundation Scholarship details', 'Adopt-A-Student Program details']
+                },
+                'financially challenged|low-income|poor students|financial aid': {
+                    answer: 'Scholarships available for financially challenged or low-income students are: Tertiary Education Subsidy (TES-UNIFAST), Tulong Dunong Program (TDP/TINGOG), CoScho Coconut Scholarship Program, YSLEP/Caritas Manila, Working Scholars Program, and Adopt-A-Student Program.',
+                    category: 'General Scholarships',
+                    suggestions: ['What is TES-UNIFAST?', 'Working Scholars Program details', 'CoScho requirements']
+                },
+                'CHED Merit Scholarship Program|CMSP|CHED Merit': {
+                    answer: 'The CHED Merit Scholarship Program is a government scholarship for incoming first-year students who meet specific academic requirements. Scholars receive ₱60,000 for a full scholarship and ₱30,000 for a half scholarship per academic year.',
+                    category: 'Government-Funded',
+                    suggestions: ['CMSP GWA requirement for application', 'CMSP GWA for maintenance']
+                },
+                'CHED Merit amount|CMSP financial assistance': {
+                    answer: 'Scholars receive ₱60,000 for full scholarship and ₱30,000 for half scholarship per academic year.',
+                    category: 'Government-Funded',
+                    suggestions: ['CMSP maintenance GWA', 'TES-UNIFAST aid amount']
+                },
+                'TES-UNIFAST|Tertiary Education Subsidy|TES aid': {
+                    answer: 'The TES-UNIFAST is for college students from low-income families verified through the DSWD LISTAHAN. Qualified students receive ₱20,000 per year or ₱10,000 per semester for those in private schools.',
+                    category: 'Government-Funded',
+                    suggestions: ['TES-UNIFAST grade requirement', 'TES eligibility']
+                },
+                'TES-UNIFAST amount|TES financial aid': {
+                    answer: 'Qualified students receive ₱20,000 per year or ₱10,000 per semester for those in private schools.',
+                    category: 'Government-Funded',
+                    suggestions: ['Tulong Dunong amount', 'TES/TDP grade requirement']
+                },
+                'Tulong Dunong Program|TDP|TINGOG': {
+                    answer: 'The TDP provides government financial assistance for students from low-income families, amounting to ₱7,500 per semester.',
+                    category: 'Government-Funded',
+                    suggestions: ['TDP grade requirement', 'TDP eligibility']
+                },
+                'CoScho|Coconut Scholarship Program': {
+                    answer: 'The Coconut Scholarship Program (CoScho) is for registered farmers and their dependents with an annual income not exceeding ₱300,000. Students must be enrolled in CHED-prioritized courses (BS in Tourism and BS in Business Administration) and maintain a GWA of at least 80% (or 2.5 and above for maintenance).',
+                    category: 'Government-Funded',
+                    suggestions: ['CoScho grade requirement', 'CoScho eligibility for courses']
+                },
+                'Academic Scholarship|Academic Scholar|grade requirement for academic': {
+                    answer: 'The Academic Scholarship grants full, three-fourth, or half tuition discounts to students excelling academically. The lowest grade allowed for any academic scholar is 1.75. Full: 1.00–1.40 GWA (no grade below 1.5); Three-fourths: 1.41–1.50 GWA (no grade below 2.0); Half: 1.51–1.60 GWA (no grade below 2.5).',
+                    category: 'School-Funded',
+                    suggestions: ['Honors and Scholarship Matrix', 'Academic Scholar additional requirements']
+                },
+                'Working Scholars Program|Working Scholars|part-time work': {
+                    answer: 'The Working Scholars Program allows financially challenged students to study for free by working part-time in assigned offices within the school. They receive ₱35 per hour.',
+                    category: 'School-Funded',
+                    suggestions: ['Scholarships for low-income', 'School-funded scholarships']
+                }
+            }
+        };
+
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatForm = document.getElementById('chatForm');
+        const sendBtn = document.getElementById('sendBtn');
+        const sidebarContent = document.getElementById('sidebarContent');
+
+        let chatHistory = [];
+
+        function searchKeywords(query) {
+            const queryLow = query.toLowerCase();
+            const queryKeywords = queryLow.split(/\s+/).filter(word => word.length > 2);
+            const results = [];
+
+            for (const keyword in FAQ.keywords) {
+                let score = 0;
+                const keywordParts = keyword.toLowerCase().split('|');
+
+                keywordParts.forEach(part => {
+                    queryKeywords.forEach(qKeyword => {
+                        if (part.includes(qKeyword) || qKeyword.includes(part)) {
+                            score += 2;
+                        }
+                    });
+                    if (queryKeywords.includes(part.trim())) {
+                        score += 5;
+                    }
+                });
+
+                if (score > 0) {
+                    results.push({
+                        keyword: keyword,
+                        data: FAQ.keywords[keyword],
+                        score: score
+                    });
+                }
+            }
+
+            results.sort((a, b) => b.score - a.score);
+            return results;
+        }
+
+        function populateSidebar() {
+            const categories = {};
+            for (const keyword in FAQ.keywords) {
+                const data = FAQ.keywords[keyword];
+                if (data.category && data.suggestions && data.suggestions.length > 0) {
+                    if (!categories[data.category]) {
+                        categories[data.category] = [];
+                    }
+                    const uniqueSuggestion = data.suggestions[0];
+                    if (!categories[data.category].includes(uniqueSuggestion)) {
+                        categories[data.category].push(uniqueSuggestion);
+                    }
+                }
+            }
+
+            sidebarContent.innerHTML = '';
+
+            for (const category in categories) {
+                if (categories[category].length > 0) {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'sidebar-section';
+                    
+                    const title = document.createElement('h4');
+                    title.textContent = category;
+                    sectionDiv.appendChild(title);
+
+                    categories[category].slice(0, 4).forEach(suggestion => {
+                        const item = document.createElement('div');
+                        item.className = 'sidebar-item';
+                        item.textContent = suggestion;
+                        item.onclick = () => {
+                            chatInput.value = suggestion;
+                            chatForm.dispatchEvent(new Event('submit'));
+                        };
+                        sectionDiv.appendChild(item);
+                    });
+                    
+                    sidebarContent.appendChild(sectionDiv);
+                }
+            }
+        }
+        
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+            
+            messageDiv.appendChild(content);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addBotMessage(text, suggestions) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+            
+            messageDiv.appendChild(content);
+            
+            if (suggestions && suggestions.length > 0) {
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.className = 'suggestions';
+                
+                suggestions.forEach(suggestion => {
+                    const btn = document.createElement('button');
+                    btn.className = 'suggestion-btn';
+                    btn.textContent = suggestion;
+                    btn.type = 'button';
+                    btn.onclick = () => {
+                        chatInput.value = suggestion;
+                        chatForm.dispatchEvent(new Event('submit'));
+                    };
+                    suggestionsDiv.appendChild(btn);
+                });
+                
+                messageDiv.appendChild(suggestionsDiv);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.id = 'typingIndicator';
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            
+            messageDiv.appendChild(indicator);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function processMessage(message) {
+            const searchResults = searchKeywords(message);
+            
+            if (searchResults.length > 0) {
+                const topMatch = searchResults[0];
+                return {
+                    reply: topMatch.data.answer || '',
+                    suggestions: topMatch.data.suggestions || []
+                };
+            }
+            
+            return {
+                reply: "I don't have information about that yet. Please ask another question or contact the Scholarship Office directly.",
+                suggestions: ['List all scholarships',
